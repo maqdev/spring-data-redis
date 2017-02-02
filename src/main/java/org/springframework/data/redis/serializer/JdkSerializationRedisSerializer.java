@@ -16,8 +16,11 @@
 package org.springframework.data.redis.serializer;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.serializer.DefaultDeserializer;
+import org.springframework.core.serializer.Deserializer;
 import org.springframework.core.serializer.support.DeserializingConverter;
 import org.springframework.core.serializer.support.SerializingConverter;
+import org.springframework.data.redis.backport.ClassLoaderAwareDeserializer;
 
 /**
  * Java Serialization Redis serializer. Delegates to the default (Java based) serializer in Spring 3.
@@ -27,8 +30,9 @@ import org.springframework.core.serializer.support.SerializingConverter;
  */
 public class JdkSerializationRedisSerializer implements RedisSerializer<Object> {
 
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private Converter<Object, byte[]> serializer = new SerializingConverter();
-	private Converter<byte[], Object> deserializer = new DeserializingConverter();
+	private Converter<byte[], Object> deserializer = new DeserializingConverter(new ClassLoaderAwareDeserializer(classLoader));
 
 	public Object deserialize(byte[] bytes) {
 		if (SerializationUtils.isEmpty(bytes)) {
